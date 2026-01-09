@@ -6,7 +6,7 @@ import { JWT } from "next-auth/jwt";
 export interface CustomSession {
     user?: customUser;
     expires: ISODateString;
-}   
+}
 
 export interface customUser {
     id?: string | null;
@@ -17,7 +17,7 @@ export interface customUser {
 
 
 export const authOptions: AuthOptions = {
-
+    secret: process.env.NEXTAUTH_SECRET,
     pages: {
         signIn: '/',
 
@@ -39,7 +39,14 @@ export const authOptions: AuthOptions = {
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID as string,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+            authorization: {
+                params: {
+                    prompt: "consent",
+                    access_type: "offline",
+                    response_type: "code"
+                }
+            }
         }),
         GithubProvider({
             clientId: process.env.GITHUB_CLIENT_ID as string,

@@ -6,6 +6,7 @@ import LoginModel from "../auth/LoginModel";
 
 export default function Navbar({user}: {user?: string}) {
     
+  
   return (
     <nav className="p-6 flex justify-between items-center bg-white shadow-sm">
       <h1 className="text-xl md:text-2xl font-extrabold">QuickChat</h1>
