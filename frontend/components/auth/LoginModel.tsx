@@ -1,4 +1,5 @@
 
+"use client";
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -13,10 +14,15 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Image from "next/image"
+import { signIn } from "next-auth/react"
 
 const LoginModel = () => {
+  const handleGoogleSignIn = async () => {
+    await signIn("google", { callbackUrl: "/dashboard" })
+  }
+
   return (
-        <Dialog>
+    <Dialog>
       <form>
         <DialogTrigger asChild>
           <Button variant="outline">Getting Started</Button>
@@ -28,7 +34,17 @@ const LoginModel = () => {
               QuickChat makes it effortless to create secure chat links and start conversations in seconds.
             </DialogDescription>
           </DialogHeader>
-          <Button variant="outline"><Image src="/assets/google.png" alt="google" width={20} height={20} />Continue with Google</Button>
+          <Button
+            variant="outline"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              handleGoogleSignIn();
+            }}
+          >
+            <Image src="/assets/google.png" alt="google" width={20} height={20} />
+            Continue with Google
+          </Button>
           <div className="grid gap-4">
             <div className="grid gap-3">
               <Label htmlFor="name-1">Name</Label>

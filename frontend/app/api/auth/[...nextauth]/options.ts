@@ -20,18 +20,25 @@ export const authOptions: AuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
     pages: {
         signIn: '/',
-
+        error: '/not-found',
+    },
+    session: {
+        strategy: "jwt",
+        maxAge: 30 * 24 * 60 * 60,
     },
     callbacks: {
-        async session({ session, user, token }: { session: CustomSession, user: customUser, token: JWT }) {
-            if (user) {
-                session.user = user
+        async session({ session, token }: { session: CustomSession, token: JWT }) {
+            if (token && session.user) {
+                session.user.id = token.sub as string
             }
             return session
         },
-        async jwt({ token, user }) {
+        async jwt({ token, user, account }) {
             if (user) {
-                token.user = user
+                token.sub = user.id as string
+            }
+            if (account) {
+                token.accessToken = account.access_token
             }
             return token
         },
