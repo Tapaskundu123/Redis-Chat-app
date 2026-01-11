@@ -10,7 +10,7 @@ interface UserData {
   oauth_id: string;
 }
 
-export async function POST(req: Request, res: Response) {
+export async function AuthLogin(req: Request, res: Response) {
   try {
     const body: UserData = req.body;
 

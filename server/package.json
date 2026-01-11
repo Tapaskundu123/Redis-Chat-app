@@ -7,8 +7,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "server": "nodemon index.js"
+    "start": "tsx index.js",
+    "server": "nodemon --exec tsx index.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
@@ -23,6 +23,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.0.3",
-    "prisma": "^7.2.0"
+    "prisma": "^7.2.0",
+    "tsx": "^4.21.0"
   }
 }
