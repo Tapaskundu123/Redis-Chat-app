@@ -7,9 +7,16 @@ const AuthMiddleware = (
   next: NextFunction
 ) => {
   try {
-    const token = req.cookies?.token;
+    const authHeader = req.headers.authorization;
+    let token = null;
 
-    if (!token) {
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+    } else if (req.cookies) {
+      token = req.cookies["next-auth.session-token"] || req.cookies.token;
+    }
+
+    if (!token || token === "undefined" || token === "null") {
       return res.status(401).json({
         success: false,
         message: "Unauthorized",

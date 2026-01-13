@@ -1,4 +1,5 @@
-'use client'  
+'use client'
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,12 +17,13 @@ import { useForm } from "react-hook-form";
 import { createChatSchema, createChatSchemaType } from "@/schemas/groupChatValidation";
 import { toast } from "sonner";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 
 
-interface receivedChatData{
-        title: string,
-        passcode: string,
-        user_id: number // ✅ correct
+interface receivedChatData {
+  title: string,
+  passcode: string,
+  user_id: number // ✅ correct
 }
 const CreateChat = () => {
   const form = useForm<createChatSchemaType>({
@@ -35,27 +37,72 @@ const CreateChat = () => {
     reset,
   } = form;
 
+  const sessionInfo = useSession();
+  const session = sessionInfo?.data;
+  const status = sessionInfo?.status;
+
+  // Debug: Log session state on change
+  React.useEffect(() => {
+    console.log("🔄 useSession Update:", {
+      status,
+      hasSession: !!session,
+      hasUser: !!(session as any)?.user,
+      hasToken: !!(session as any)?.user?.token,
+    });
+  }, [session, status]);
+
   const onSubmit = async (data: createChatSchemaType) => {
-  
-    try {
-      
-      const res= await axios.post("http://localhost:5000/api/chat-group",
-    {
-       title: data.title,
-      passcode: data.passcode,
-     },
-    { withCredentials: true }
-  )
-
-     if(res.data){
-        //  const resData:receivedChatData= await res.data;
-        return toast.success('chat group made successfully',res.data)
-     }
-
-      reset();
-    } catch (error:any) {
-      toast.error('something went wrong',error?.message);
+    // Wait for session to load
+    if (status === "loading") {
+      toast.error("Session is loading. Please try again.");
       return;
+    }
+
+    // Check if user is authenticated
+    if (status === "unauthenticated") {
+      toast.error("You need to be logged in to create a chat group.");
+      return;
+    }
+
+    const token = (session as any)?.user?.token;
+    
+    // Debug logging
+    console.log("=== CREATE CHAT DEBUG ===");
+    console.log("Session Status:", status);
+    console.log("Full Session:", session);
+    console.log("Session User:", (session as any)?.user);
+    console.log("Token Found:", token);
+    console.log("========================");
+
+    if (!token) {
+      console.error("❌ No token found in session. Session user object:", (session as any)?.user);
+      toast.error("Session expired or invalid. Please logout and login again.");
+      return;
+    }
+
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/chat-group",
+        {
+          title: data.title,
+          passcode: data.passcode,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (res.data) {
+        toast.success("Chat group created successfully!");
+        reset();
+      }
+    } catch (error: any) {
+      toast.error("Something went wrong", {
+        description: error?.response?.data?.message || error.message,
+      });
     }
   };
 

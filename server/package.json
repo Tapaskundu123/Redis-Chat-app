@@ -13,11 +13,14 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
+    "@types/pg": "^8.16.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "nodemon": "^3.1.11",
-    "postgres": "^3.4.8"
+    "pg": "^8.16.3",
+    "save": "^2.9.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

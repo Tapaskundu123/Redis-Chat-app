@@ -15,10 +15,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Image from "next/image"
 import { signIn } from "next-auth/react"
+import { useState } from "react";
 
 const LoginModel = () => {
+
+  const [name,setName]= useState('')
+  
   const handleGoogleSignIn = async () => {
-    await signIn("google", { callbackUrl: "/dashboard" })
+    await signIn("google", { callbackUrl: "/Dashboard" })
   }
 
   return (

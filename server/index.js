@@ -1,13 +1,15 @@
+import "dotenv/config";
 import express from "express";
 import UserRoutes from './routes/userRoutes.ts'
 import cors from 'cors'
 const app = express();
 const PORT = 5000;
+import cookieParser from "cookie-parser";
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(cookieParser());
 
 app.use(
   cors({
