@@ -6,9 +6,11 @@ const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
   console.log("the group id is:", id)
 
   return (
-    <div>
-      <ChatBase />
-    </div>
+    <ChatBase
+      roomId={id}
+      roomName={`Chat Room ${id}`}
+      userName="User"
+    />
   )
 }
 
