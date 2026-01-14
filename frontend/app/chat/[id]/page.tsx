@@ -1,14 +1,15 @@
 import ChatBase from '@/components/chat/ChatBase'
 import React from 'react'
 
-const page = ({params}:{params:{id:string}}) => {
+const Page = async ({ params }: { params: Promise<{ id: string }> }) => {
+  const { id } = await params   // ✅ unwrap the promise
+  console.log("the group id is:", id)
 
-    console.log("the group id is :",params.id)
   return (
     <div>
-        <ChatBase/>
+      <ChatBase />
     </div>
   )
 }
 
-export default page
+export default Page

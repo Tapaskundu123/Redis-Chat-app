@@ -1,53 +1,61 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { connectSocket, disconnectSocket } from '@/lib/socket-config';
+import { useEffect, useRef, useState } from 'react';
+import { connectSocket } from '@/lib/socket-config';
 import { Socket } from 'socket.io-client';
 import { v4 as uuidv4 } from 'uuid';
 
 const ChatBase = () => {
   const [messages, setMessages] = useState<any[]>([]);
   const [isConnected, setIsConnected] = useState(false);
-
-  const socket: Socket = useMemo(() => {
-    return connectSocket();
-  }, []);
-
-  useEffect(() => {
-    socket.connect();
-
-    socket.on('connect', () => {
-      console.log('Connected to server:', socket.id);
-      setIsConnected(true);
-    });
-
-    socket.on('message', (data: any) => {
-      console.log('The secret message is ', data);
-      setMessages((prev) => [...prev, data]);
-    });
-
-    socket.on('disconnect', () => {
-      console.log('Disconnected from server');
-      setIsConnected(false);
-    });
-
-    return () => {
-      socket.off('connect');
-      socket.off('message');
-      socket.off('disconnect');
-      disconnectSocket();
-    };
-  }, [socket]);
+  const socketRef = useRef<Socket | null>(null);
 
   const handleMessage = () => {
-    socket.emit('message', { name: 'Tapas', id: uuidv4(), message: 'secret message' });
+    if (socketRef.current) {
+      socketRef.current.emit('message', { id: uuidv4(), message: 'Your message here' });
+    }
   };
+
+  useEffect(() => {
+    // Remove any existing listeners first
+    const socket = connectSocket();
+    socketRef.current = socket;
+
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    const handleConnect = () => {
+      console.log('Connected to server:', socket.id);
+      setIsConnected(true);
+    };
+
+    const handleMessageReceive = (data: any) => {
+      console.log('Message received:', data);
+      setMessages((prev) => [...prev, data]);
+    };
+
+    const handleDisconnect = () => {
+      console.log('Disconnected from server');
+      setIsConnected(false);
+    };
+
+    socket.on('connect', handleConnect);
+    socket.on('message', handleMessageReceive);
+    socket.on('disconnect', handleDisconnect);
+
+    return () => {
+      socket.off('connect', handleConnect);
+      socket.off('message', handleMessageReceive);
+      socket.off('disconnect', handleDisconnect);
+    };
+  }, []);
 
   return (
     <div>
       <h1>Chat App</h1>
       <p>Status: {isConnected ? '✅ Connected' : '❌ Disconnected'}</p>
-      <button onClick={handleMessage} disabled={!isConnected}>
+      <button className='bg-black text-white p-4  rounded-xl' onClick={handleMessage} disabled={!isConnected}>
         Send Message
       </button>
       <div>
