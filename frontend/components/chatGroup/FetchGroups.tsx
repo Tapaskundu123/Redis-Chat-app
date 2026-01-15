@@ -2,25 +2,33 @@
 import React, { useEffect, useState } from "react";
 import GroupCard from "./GroupCard";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
 interface ChatGroup {
-    id: number;
+    id: string;
     title: string;
     passcode: string;
-    created_at: string;
+    createdAt: string;
 }
 
 interface FetchGroupsProps {
     token?: string;
 }
 
-const FetchGroups: React.FC<FetchGroupsProps> = ({ token }) => {
+const FetchGroups: React.FC<FetchGroupsProps> = ({ token: passedToken }) => {
+    const { data: session } = useSession();
     const [groups, setGroups] = useState<ChatGroup[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
+    // Use passed token or get from session
+    const token = passedToken || session?.user?.token;
+
     useEffect(() => {
         const fetchGroups = async () => {
-            if (!token) return;
+            if (!token) {
+                setLoading(false);
+                return;
+            }
             try {
                 const res = await fetch("http://localhost:5000/api/chat-group", {
                     headers: {
@@ -66,9 +74,10 @@ const FetchGroups: React.FC<FetchGroupsProps> = ({ token }) => {
             {groups.map((group) => (
                 <GroupCard
                     key={group.id}
+                    id={group.id}
                     title={group.title}
                     passcode={group.passcode}
-                    created_at={group.created_at}
+                    created_at={group.createdAt}
                 />
             ))}
         </div>

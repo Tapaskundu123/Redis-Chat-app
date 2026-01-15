@@ -15,6 +15,7 @@ declare module "next-auth/jwt" {
     interface JWT {
         backendToken?: string;
         sub?: string;
+        token?: string;
     }
 }
 
@@ -44,13 +45,10 @@ export const authOptions: AuthOptions = {
     },
     callbacks: {
         async signIn({ user, account, profile }) {
-            // ✅ Only sync for Google and Github
+            // ✅ Optional: Sync user with backend during signIn (non-blocking)
+            // This is optional - login will succeed even if backend sync fails
             if (account?.provider === "google" || account?.provider === "github") {
                 try {
-                    console.log("NextAuth SignIn: Attempting backend sync for", user.email);
-
-                    // Prefer providerAccountId (guaranteed by NextAuth account object),
-                    // fall back to profile.sub or user.id if available.
                     const oauthId = account?.providerAccountId || (profile as any)?.sub || user.id;
 
                     const response = await fetch("http://127.0.0.1:5000/api/auth/login", {
@@ -68,68 +66,50 @@ export const authOptions: AuthOptions = {
                     });
 
                     const data = await response.json();
-                    console.log("NextAuth SignIn: Backend response:", data);
 
-                    if (data?.success) {
-                        // attach backend token to user so it flows into jwt callback
-                        (user as any).token = data.token;
-                        console.log("✅ NextAuth SignIn: Token attached to user:", {
-                            hasToken: !!(user as any).token,
-                            userObject: user
-                        });
-                        return true;
+                    if (data?.success && data.token) {
+                        // Optional: store token if available
+                        (user as any).backendToken = data.token;
+                        console.log("✅ Backend token received");
+                    } else {
+                        console.log("⚠️ Backend token not available:", data?.message);
+                        // Don't fail the login - just proceed without backend token
                     }
-
-                    console.error("NextAuth SignIn: Backend returned failure:", data?.message);
-                    return false;
                 } catch (error) {
-                    console.error("NextAuth SignIn: Network error during backend sync:", error);
-                    return false; // Fail sign-in if sync fails
+                    console.error("⚠️ Backend sync error (non-blocking):", error);
+                    // Non-blocking error - login still succeeds
                 }
             }
+            // Always return true to allow login
             return true;
         },
         async session({ session, token }: { session: CustomSession, token: JWT }) {
-            console.log("Session callback - token contents:", {
-                sub: token.sub,
-                hasBackendToken: !!token.backendToken,
-                tokenKeys: Object.keys(token)
-            });
-            
-            // Initialize user object if it doesn't exist
+            // Add user data to session from token
             if (!session.user) {
                 session.user = {} as customUser;
             }
             
-            // Always populate user data from token
-            session.user.id = token.sub as string;
-            const backendToken = token.backendToken as string;
-            if (backendToken) {
-                session.user.token = backendToken;
-                console.log("✅ Session callback - token assigned successfully");
-            } else {
-                console.error("❌ Session callback - backendToken is missing from JWT token");
+            if (token.sub) {
+                session.user.id = token.sub as string;
             }
             
-            return session
+            // Optional: Add backend token if available
+            if (token.backendToken) {
+                session.user.token = token.backendToken as string;
+            }
+            
+            return session;
         },
-        async jwt({ token, user, account }) {
-            // When user first logs in
+        async jwt({ token, user }) {
+            // When user first logs in, store user ID
             if (user) {
                 token.sub = user.id as string;
-                token.backendToken = (user as customUser).token;
-                console.log("JWT callback - storing token:", {
-                    userId: user.id,
-                    hasBackendToken: !!token.backendToken,
-                    tokenValue: token.backendToken
-                });
-            } else {
-                // On subsequent calls, preserve existing backendToken
-                if (!token.backendToken) {
-                    console.warn("JWT callback - No backendToken found and no user provided");
+                // Optional: Store backend token if available
+                if ((user as any).backendToken) {
+                    token.backendToken = (user as any).backendToken;
                 }
             }
-            return token
+            return token;
         },
     },
     providers: [

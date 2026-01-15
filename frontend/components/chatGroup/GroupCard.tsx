@@ -1,16 +1,18 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, Copy } from "lucide-react";
+import { Lock, Copy, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import Link from "next/link";
 
 interface GroupCardProps {
+    id: string;
     title: string;
     passcode: string;
     created_at?: string;
 }
 
-const GroupCard: React.FC<GroupCardProps> = ({ title, passcode, created_at }) => {
+const GroupCard: React.FC<GroupCardProps> = ({ id, title, passcode, created_at }) => {
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
         toast.success("Copied to clipboard!");
@@ -45,6 +47,17 @@ const GroupCard: React.FC<GroupCardProps> = ({ title, passcode, created_at }) =>
                         <Copy className="w-4 h-4" />
                     </Button>
                 </div>
+
+                {/* Visit Chat Button */}
+                <Link href={`/chat/${id}`} className="mt-4 block">
+                    <Button
+                        className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white font-medium"
+                        size="sm"
+                    >
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        Visit Chat Room
+                    </Button>
+                </Link>
             </CardContent>
         </Card>
     );

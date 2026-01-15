@@ -1,24 +1,38 @@
 import { Server, Socket } from 'socket.io';
+import prisma from "./src/config/db.config";
 
 export function setupSocket(io: Server) {
     io.on('connection', (socket: Socket) => {
         console.log('🔌 User connected:', socket.id);
 
         // Handle message events
-        socket.on('message', (data: any) => {
+        socket.on('message', async (data: any) => {
             console.log('📨 Message received:', data);
 
-            const messageData = {
-                ...data,
-                timestamp: new Date(),
-                socketId: socket.id,
-            };
+            try {
+                // Save message to database
+                await prisma.chatMessage.create({
+                    data: {
+                        group_id: data.roomId,
+                        name: data.name,
+                        message: data.message,
+                    },
+                });
 
-            // If roomId is provided, send to room; otherwise broadcast to all
-            if (data.roomId) {
-                io.to(data.roomId).emit('message', messageData);
-            } else {
-                io.emit('message', messageData);
+                const messageData = {
+                    ...data,
+                    timestamp: new Date(),
+                    socketId: socket.id,
+                };
+
+                // If roomId is provided, send to room; otherwise broadcast to all
+                if (data.roomId) {
+                    io.to(data.roomId).emit('message', messageData);
+                } else {
+                    io.emit('message', messageData);
+                }
+            } catch (error) {
+                console.error("Error saving message:", error);
             }
         });
 

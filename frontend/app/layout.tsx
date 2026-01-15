@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'sonner';
+import SessionProviderWrapper from "@/providers/SessionProvider";
+import HydrationFixer from "@/components/HydrationFixer";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -17,8 +20,6 @@ export const metadata: Metadata = {
   description: "Lets chat with your friends",
 };
 
-import SessionProviderWrapper from "@/providers/SessionProvider";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,8 +29,10 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
         <SessionProviderWrapper>
+          <HydrationFixer />
           {children}
           <Toaster richColors position="top-right" />
         </SessionProviderWrapper>

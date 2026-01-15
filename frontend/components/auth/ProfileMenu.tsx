@@ -38,7 +38,7 @@ export default function ProfileMenu({
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem >
+          <DropdownMenuItem onClick={() => setLogoutOpen(true)}>
             Logout
           </DropdownMenuItem>
         </DropdownMenuContent>
