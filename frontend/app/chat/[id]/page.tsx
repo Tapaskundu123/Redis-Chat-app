@@ -1,7 +1,7 @@
 'use client';
 
 import ChatBase from "@/components/chat/ChatBase";
-import { notFound, useParams } from "next/navigation";
+import { notFound, redirect, useParams } from "next/navigation";
 import { Env } from "@/lib/env";
 import axios from "axios";
 import { useEffect, useState } from 'react';
@@ -36,14 +36,10 @@ const Page = () => {
         }
 
         setGroup(data.group);
-      } catch (error: any) {
-        console.error("Chat check failed:", error);
+      } 
+      catch (error: any) {
         toast.error("Group doesn't exist or access denied");
-        // Don't call notFound() immediately here as it might be a temporary error
-        // But if it's 404, we should.
-        if (error.response?.status === 404) {
-          notFound();
-        }
+        redirect('/dashboard');
       }
     };
 

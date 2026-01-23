@@ -39,11 +39,16 @@ const ChatBase = ({ roomId, roomName, userName }: ChatBaseProps) => {
   const [isConnected, setIsConnected] = useState(false);
   const [onlineCount, setOnlineCount] = useState(1);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [userId, setUserId] = useState<string>('');
   const socketRef = useRef<Socket | null>(null);
 
   // Typing debounce
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastTypingEmitRef = useRef<number>(0);
+
+  useEffect(() => {
+    setUserId(currentUserId.current);
+  }, []);
 
   useEffect(() => {
     const socket = connectSocket();
@@ -259,7 +264,7 @@ const ChatBase = ({ roomId, roomName, userName }: ChatBaseProps) => {
         isConnected={isConnected}
       />
 
-      <MessageList messages={messages} currentUserId={currentUserId.current} />
+      <MessageList messages={messages} currentUserId={userId} />
 
       {typingText && <TypingIndicator text={typingText} />}
 
